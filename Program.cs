@@ -3,6 +3,7 @@ using System.Drawing;
 using System.Threading.Tasks;
 using Microsoft.Identity.Client;
 using System.IO;
+using Flurl.Http;
 
 namespace GraphAPI_2
 {
@@ -23,8 +24,13 @@ namespace GraphAPI_2
                 .Build();
 
             var result = await app.AcquireTokenInteractive(scopes).ExecuteAsync();
-
             var token = result.AccessToken;
+
+            string profileJson = await "https://graph.microsoft.com/v1.0/me"
+                .WithOAuthBearerToken(token)
+                .GetStringAsync();
+
+            Console.WriteLine(profileJson);
         }   
     }
 }
