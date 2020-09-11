@@ -4,6 +4,8 @@ using System.Threading.Tasks;
 using Microsoft.Identity.Client;
 using System.IO;
 using Flurl.Http;
+using Microsoft.Graph.Auth;
+using Microsoft.Graph;
 
 namespace GraphAPI_2
 {
@@ -15,7 +17,8 @@ namespace GraphAPI_2
         {
 
             string[] scopes = new string[] {
-                "User.Read"
+                "User.Read",
+                "Mail.Read"
             };
 
             var app = PublicClientApplicationBuilder
@@ -23,14 +26,27 @@ namespace GraphAPI_2
                 .WithRedirectUri("http://localhost")
                 .Build();
 
-            var result = await app.AcquireTokenInteractive(scopes).ExecuteAsync();
-            var token = result.AccessToken;
+            var provider = new InteractiveAuthenticationProvider(app, scopes);
+            var client = new GraphServiceClient(provider);
 
-            string profileJson = await "https://graph.microsoft.com/v1.0/me"
-                .WithOAuthBearerToken(token)
-                .GetStringAsync();
+            var me = await client.Me.Request().GetAsync();
 
-            Console.WriteLine(profileJson);
+            Console.WriteLine($"[Job title] {me.JobTitle}");
+            Console.WriteLine($"[Display Name] {me.DisplayName}");
+
+            var emails = await client.Me.Messages.Request().GetAsync();
+
+            foreach (var email in emails)
+            {
+                Console.WriteLine($"Identity: {email.Id}");
+                Console.WriteLine($"Subject: {email.Subject}");
+            }
+            
+            var targetEmailId = "AAMkAGZiNDQ5ZGIxLWQxODItNDBiOC04YTU1LWQzZDViMGM5YzA4ZgBGAAAAAABccwtJEopGTpN60XHLzvh0BwCs4W1eATlmS6PDlliTmDrnAAAAAAEMAACs4W1eATlmS6PDlliTmDrnAAAAAAlZAAA=";
+            var targetEmail = await client.Me.Messages[targetEmailId].Request().GetAsync();
+
+            Console.WriteLine($"Preview Message: {targetEmail.BodyPreview}");
+            Console.WriteLine($"Message: {targetEmail.Body.Content}");
         }   
     }
 }
