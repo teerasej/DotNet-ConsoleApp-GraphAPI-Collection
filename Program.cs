@@ -34,19 +34,19 @@ namespace GraphAPI_2
             Console.WriteLine($"[Job title] {me.JobTitle}");
             Console.WriteLine($"[Display Name] {me.DisplayName}");
 
-            var emails = await client.Me.Messages.Request().GetAsync();
+          
+            var emails = await client.Me.Messages.Request()
+            .OrderBy($"{nameof(Message.ReceivedDateTime)}")
+            .Filter($"{nameof(Message.ReceivedDateTime)} lt 2020-09-09")
+            //.Filter($"{nameof(Message.IsRead)} eq true")
+            .GetAsync();
 
             foreach (var email in emails)
             {
-                Console.WriteLine($"Identity: {email.Id}");
+                Console.WriteLine($"Recieved: {email.ReceivedDateTime:G}");
                 Console.WriteLine($"Subject: {email.Subject}");
             }
-            
-            var targetEmailId = "AAMkAGZiNDQ5ZGIxLWQxODItNDBiOC04YTU1LWQzZDViMGM5YzA4ZgBGAAAAAABccwtJEopGTpN60XHLzvh0BwCs4W1eATlmS6PDlliTmDrnAAAAAAEMAACs4W1eATlmS6PDlliTmDrnAAAAAAlZAAA=";
-            var targetEmail = await client.Me.Messages[targetEmailId].Request().GetAsync();
-
-            Console.WriteLine($"Preview Message: {targetEmail.BodyPreview}");
-            Console.WriteLine($"Message: {targetEmail.Body.Content}");
+          
         }   
     }
 }
