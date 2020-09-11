@@ -22,6 +22,9 @@ namespace GraphAPI_2
                 .WithRedirectUri("http://localhost")
                 .Build();
 
+            var result = await app.AcquireTokenInteractive(scopes).ExecuteAsync();
+
+            var token = result.AccessToken;
         }   
     }
 }
